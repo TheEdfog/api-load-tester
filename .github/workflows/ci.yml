@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -18,4 +19,3 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest
-
