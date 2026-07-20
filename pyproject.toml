@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "api-load-tester"
+version = "1.0.0"
+description = "Asynchronous HTTP load tester with latency percentiles and JSON reports"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "Alim" }]
+dependencies = ["aiohttp>=3.10,<4"]
+
+[project.optional-dependencies]
+demo = ["fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1"]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2", "ruff>=0.9,<1"]
+
+[project.scripts]
+api-load-test = "loadtest.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["loadtest*", "demo_api*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+

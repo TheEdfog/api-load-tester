@@ -1,0 +1,11 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY pyproject.toml README.md LICENSE ./
+COPY loadtest ./loadtest
+COPY demo_api ./demo_api
+RUN pip install --no-cache-dir ".[demo]"
+
+CMD ["uvicorn", "demo_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+

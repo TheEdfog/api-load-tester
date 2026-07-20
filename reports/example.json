@@ -1,0 +1,32 @@
+{
+  "generated_at": "2026-07-20T12:00:00+00:00",
+  "target": {
+    "url": "http://demo-api:8000/names",
+    "method": "POST",
+    "start_rate_rps": 100.0,
+    "end_rate_rps": 100.0,
+    "scheduling_duration_seconds": 5,
+    "concurrency": 200,
+    "timeout_seconds": 10.0
+  },
+  "attempted_requests": 500,
+  "completed_requests": 500,
+  "successful_requests": 500,
+  "unsuccessful_requests": 0,
+  "error_rate_pct": 0.0,
+  "wall_duration_seconds": 5.065,
+  "achieved_rps": 98.717,
+  "latency_ms": {
+    "min": 4.102,
+    "average": 8.447,
+    "p50": 7.12,
+    "p95": 14.81,
+    "p99": 21.34,
+    "max": 31.912
+  },
+  "status_codes": {
+    "200": 500
+  },
+  "transport_errors": {}
+}
+
