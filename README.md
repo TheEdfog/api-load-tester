@@ -10,7 +10,7 @@ The repository includes a small FastAPI service for local experiments. It is int
 CLI -> request scheduler -> bounded asyncio workers -> target API -> JSON report
 ```
 
-The scheduler controls the requested rate while a semaphore limits requests in flight. Response bodies are consumed but not stored, so reports do not retain API data and memory use stays predictable.
+The scheduler controls the requested rate while a bounded task set limits requests in flight. When the target cannot keep up, scheduling waits for capacity, so requested and achieved RPS diverge instead of creating an unbounded queue. Response bodies are consumed but not stored.
 
 ## Run with Docker
 
