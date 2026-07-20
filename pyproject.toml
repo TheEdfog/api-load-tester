@@ -9,7 +9,7 @@ description = "Asynchronous HTTP load tester with latency percentiles and JSON r
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "GPL-3.0-or-later" }
-authors = [{ name = "Alim" }]
+authors = [{ name = "Alim Narmamatov" }]
 dependencies = ["aiohttp>=3.10,<4"]
 
 [project.optional-dependencies]
@@ -32,4 +32,3 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
-

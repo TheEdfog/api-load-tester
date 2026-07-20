@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections.abc import Awaitable
 
 import aiohttp
 
@@ -19,20 +18,16 @@ def rate_for_second(config: LoadConfig, second: int) -> float:
 
 async def _send_request(
     session: aiohttp.ClientSession,
-    semaphore: asyncio.Semaphore,
     config: LoadConfig,
 ) -> Observation:
     started = time.perf_counter()
     try:
-        async with (
-            semaphore,
-            session.request(
-                config.method,
-                config.url,
-                headers=config.headers,
-                json=config.json_body,
-            ) as response,
-        ):
+        async with session.request(
+            config.method,
+            config.url,
+            headers=config.headers,
+            json=config.json_body,
+        ) as response:
             await response.read()
             return Observation(time.perf_counter() - started, response.status)
     except TimeoutError:
@@ -45,8 +40,8 @@ async def run_load_test(config: LoadConfig) -> tuple[list[Observation], float]:
     """Schedule requests and return observations plus total wall-clock duration."""
     timeout = aiohttp.ClientTimeout(total=config.timeout)
     connector = aiohttp.TCPConnector(limit=config.concurrency)
-    semaphore = asyncio.Semaphore(config.concurrency)
-    tasks: list[Awaitable[Observation]] = []
+    pending: set[asyncio.Task[Observation]] = set()
+    observations: list[Observation] = []
     wall_started = time.perf_counter()
 
     async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
@@ -60,8 +55,15 @@ async def run_load_test(config: LoadConfig) -> tuple[list[Observation], float]:
                 delay = scheduled_at - time.perf_counter()
                 if delay > 0:
                     await asyncio.sleep(delay)
-                tasks.append(asyncio.create_task(_send_request(session, semaphore, config)))
+                if len(pending) >= config.concurrency:
+                    completed, pending = await asyncio.wait(
+                        pending,
+                        return_when=asyncio.FIRST_COMPLETED,
+                    )
+                    observations.extend(task.result() for task in completed)
+                pending.add(asyncio.create_task(_send_request(session, config)))
 
-        observations = await asyncio.gather(*tasks)
+        if pending:
+            observations.extend(await asyncio.gather(*pending))
 
     return observations, time.perf_counter() - wall_started
