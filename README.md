@@ -1,26 +1,26 @@
-# API Load Tester
+# Нагрузочное тестирование API
 
-I built this tool while investigating the performance of ML APIs. It sends HTTP requests at a constant or gradually increasing rate and writes a JSON report with throughput, errors, status codes and p50/p95/p99 latency.
+Этот инструмент появился во время исследования производительности ML API. Он отправляет HTTP-запросы с постоянной или линейно растущей интенсивностью и сохраняет JSON-отчёт: throughput, ошибки, HTTP-статусы и задержки p50/p95/p99.
 
-The repository includes a small FastAPI service for local experiments. It is intentionally a single-machine tool, not a replacement for distributed load-testing systems such as k6, Gatling or Locust.
+В репозитории есть небольшой FastAPI-сервис для локальных экспериментов. Инструмент рассчитан на запуск с одной машины и не пытается заменить распределённые системы вроде k6, Gatling или Locust.
 
-## How it works
+## Как устроен запуск
 
 ```text
-CLI -> request scheduler -> bounded asyncio workers -> target API -> JSON report
+CLI → планировщик запросов → ограниченный набор asyncio-задач → целевой API → JSON-отчёт
 ```
 
-The scheduler controls the requested rate while a bounded task set limits requests in flight. When the target cannot keep up, scheduling waits for capacity, so requested and achieved RPS diverge instead of creating an unbounded queue. Response bodies are consumed but not stored.
+Планировщик задаёт целевой RPS, а число одновременно выполняемых задач ограничивается параметром `concurrency`. Если сервис не успевает обрабатывать запросы, планирование ждёт свободного слота: фактический RPS снижается, но очередь не растёт бесконтрольно. Тела ответов считываются, но не сохраняются.
 
-## Run with Docker
+## Запуск через Docker
 
-Start the demo API:
+Поднять демонстрационный API:
 
 ```bash
 docker compose up --build -d demo-api
 ```
 
-Run a ten-second test at 100 requests per second:
+Выполнить десятисекундный тест с интенсивностью 100 запросов в секунду:
 
 ```bash
 docker compose run --rm load-tester \
@@ -33,11 +33,11 @@ docker compose run --rm load-tester \
   --output reports/demo.json
 ```
 
-Stop the environment with `docker compose down`.
+Остановить окружение: `docker compose down`.
 
-## Run locally
+## Локальный запуск
 
-Python 3.11 or newer is recommended.
+Требуется Python 3.11+.
 
 ```bash
 python -m venv .venv
@@ -45,7 +45,7 @@ python -m pip install -e ".[dev,demo]"
 uvicorn demo_api.main:app --host 0.0.0.0 --port 8000
 ```
 
-In another terminal:
+В другом терминале:
 
 ```bash
 api-load-test \
@@ -59,9 +59,9 @@ api-load-test \
   --output reports/ramp.json
 ```
 
-`--end-rate` is optional; without it the load stays constant. Headers can be repeated with `--header`, and the request body can come from `--body` or `--body-file`.
+Параметр `--end-rate` необязателен: без него нагрузка остаётся постоянной. Заголовки можно передавать повторяющимся `--header`, JSON-тело — через `--body` или `--body-file`.
 
-## Example result
+## Пример результата
 
 ```json
 {
@@ -74,7 +74,7 @@ api-load-test \
 }
 ```
 
-## Checks
+## Проверки
 
 ```bash
 pytest
@@ -82,8 +82,8 @@ ruff check .
 ruff format --check .
 ```
 
-## Limits
+## Ограничения
 
-- Requested and achieved throughput can differ when the client or server reaches the concurrency limit.
-- Latencies are kept in memory, so very long runs would benefit from a streaming histogram.
-- Results against the bundled demo service say nothing about production capacity.
+- Целевой и фактический throughput расходятся, если клиент или сервер достигает лимита concurrency.
+- Значения latency хранятся в памяти; для очень долгих тестов лучше использовать потоковую гистограмму.
+- Результаты на встроенном demo API ничего не говорят о производительности production-сервиса.
