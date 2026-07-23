@@ -1,0 +1,4 @@
+flowchart LR
+    cli["CLI и планировщик<br/>RPS, ramp, duration"] --> pool["Ограниченный пул<br/>asyncio-задач"]
+    pool --> api["Целевой API"]
+    api --> report["Метрики и JSON-отчёт<br/>ошибки, p50, p95, p99"]
