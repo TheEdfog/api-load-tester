@@ -7,7 +7,7 @@
 ## Как устроен запуск
 
 ```mermaid
-flowchart LR
+flowchart TD
     cli["CLI<br/>URL, RPS, duration"] --> scheduler["Планировщик<br/>постоянная или растущая нагрузка"]
     scheduler --> pool["Ограниченный пул<br/>asyncio-задач"]
     pool --> api["Целевой API"]
